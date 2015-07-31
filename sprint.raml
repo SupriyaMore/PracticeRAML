@@ -1,0 +1,319 @@
+#%RAML 0.8
+title: CWS USA API
+version: v0.0.1
+baseUri: http://www.cwsservices.com/honeyBeeActivate/{apiVersion}/
+protocols: [ HTTP, HTTPS ]
+mediaType: application/json
+documentation:
+  - title: CWS USA API - Summary
+    content: This console exposes the CWS APIs available to Acme in the US market.
+
+  - title: DeviceValidation Service
+    content: The DeviceValidation service is exposed in the /device/validation URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. | This API is used to validate a device before it is activated.
+      
+  - title: AccountLookup Service
+    content: The ExistingLinePreAuth service is exposed in the /account/lookup URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. | This API is used to retrieve an existing account and subscriber information
+  
+  - title: ExistingLinePreAuth Service
+    content: The ExistingLinePreAuth service is exposed in the /eligibility URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. | This API is used to run a credit check on an account holder, check whether a subscriber is eligible for a loan from the carrier, checks whether a subscriber
+      has any current loans with the carrier, validates whether they must give back their current device and finally iniates an order with the carrier.
+      
+  - title: CarrierOfferingsLookup Service
+    content: The CarrierOfferingsLookup service is exposed in the /offers/lookup URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. This API is used to fetch all the carrier offerings that a user is eligible for. This includes plans and options.
+       
+  - title: SavePreAuth Service
+    content: The SavePreAuth service is exposed in the /offers/selection URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200.This API is used to validate all the plans and options that a user has previously 
+      selected. 
+      
+  - title: GetDocument Service
+    content: The GetDocument service is exposed in the /document/retrieval URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. This API is used to fetch the users new contract from the carrier in a PDF format.
+      
+  - title: SubmitDocument Service
+    content: The ExistingLinePreAuth service is exposed in the /document/submission URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. This API is used to submit a signed contract that the user has agreed to.
+  
+  - title: PreAuthContinuation Service
+    content: The ExistingLinePreAuth service is exposed in the /activation URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. This API is used to activate a users new mobile contract.
+
+  - title: SendSecurityInfo Service
+    content: The SendSecurityInfo service is exposed in the /customer/securityInfo URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. This API is used to resend a users security information to them.
+
+  - title: TokenRequest Service
+    content: The TokenRequest service is exposed in the /token/retrieval URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. This API is used to create a user Token to send to a carrier in the event of an error.
+
+  - title: DeviceReturnRequest Service
+    content: The DeviceReturnRequest service is exposed in the /order/returns URL and accepts a JSON payload via a POST HTTP method. | 
+      This service also returns a JSON payload response with the HTTP status 200. This API is used to validate if a user must return their device for easy pay.
+
+schemas:
+- account-lookup-request-schema:          !include account/Schemas/account-lookup-request-schema.json
+- account-lookup-response-schema:         !include account/Schemas/account-lookup-response-schema.json
+- activation-request-schema:              !include activation/Schemas/activation-request-schema.json
+- activation-response-schema:             !include activation/Schemas/activation-response-schema.json
+- customer-securityinfo-request-schema:   !include customer/Schemas/customer-securityinfo-request-schema.json
+- customer-securityinfo-response-schema:  !include customer/Schemas/customer-securityinfo-response-schema.json
+- device-validation-request-schema:       !include device/Schemas/device-validation-request-schema.json
+- device-validation-response-schema:      !include device/Schemas/device-validation-response-schema.json
+- document-retrieval-request-schema:      !include document/retrieval/Schemas/document-retrieval-request-schema.json
+- document-retrieval-response-schema:     !include document/retrieval/Schemas/document-retrieval-response-schema.json
+- document-submission-request-schema:     !include document/submission/Schemas/document-submission-request-schema.json
+- document-submission-response-schema:    !include document/submission/Schemas/document-submission-response-schema.json
+- eligibility-request-schema:             !include eligibility/Schemas/preAuthEligibility-request-schema.json
+- eligibility-response-schema:            !include eligibility/Schemas/preAuthEligibility-response-schema.json
+- offers-lookup-request-schema:           !include offers/lookup/Schemas/CarrierOfferingRequestSchema.json
+- offers-lookup-response-schema:          !include offers/lookup/Schemas/CarrierOfferingResponseSchema.json
+- offers-selection-request-schema:        !include offers/selection/Schemas/offers-selection-request-schema.json
+- offers-selection-response-schema:       !include offers/selection/Schemas/offers-selection-response-schema.json
+- order-returns-request-schema:           !include order/returns/Schemas/order-returns-request-schema.json
+- order-returns-response-schema:          !include order/returns/Schemas/order-returns-response-schema.json
+- order-status-response-schema:           !include order/status/Schemas/order-status-response-schema.json
+- token-retrieval-request-schema:         !include token/retrieval/Schemas/token-retrieval-request-schema.json
+- token-retrieval-response-schema:        !include token/retrieval/Schemas/token-retrieval-response-schema.json
+
+baseUriParameters:
+  apiVersion:
+    type: string
+    required: true
+
+traits:
+  -  thirdPartyStateful:
+      description: third Party
+      displayName: third party co-id to link requests
+      headers:
+        thirdPartyCorrelationId:
+          type: string
+          required: true
+
+  - commonHeader:
+      displayName: Common header
+      description: Common header paramaters
+      headers:
+        testId:
+          type: string
+          required: false
+
+/account:
+  /lookup:
+    displayName: AccountLookup
+    description: Retrieves existing account and subscriber information
+    post:
+      description: Retrieves existing account and subscriber information
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: account-lookup-request-schema
+          example: !include account/Examples/account-lookup-request-example.json
+      responses:
+        200:
+          description: Success
+          body:
+            application/json:
+              schema: account-lookup-response-schema
+              example: !include account/Examples/account-lookup-response-example.json
+
+/activation:
+  displayName: PreAuthContinuation
+  description: Activates against a carrier
+  post:
+    description: Activates against a carrier
+    is: [ commonHeader ]
+    body:
+      application/json:
+         schema: activation-request-schema
+         example: !include activation/Examples/activation-request-example.json
+    responses:
+      200:
+        description: Success
+        body:
+          application/json:
+             schema: activation-response-schema
+             example: !include activation/Examples/activation-response-example.json
+
+/customer:
+  /securityInfo:
+    displayName: SendSecurityInfo
+    description: TODO 
+    post:
+      description: TODO
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: customer-securityinfo-request-schema
+          example: !include customer/Examples/customer-securityinfo-request-example.json
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: customer-securityinfo-response-schema
+              example: !include customer/Examples/customer-securityinfo-response-example.json
+
+/device:
+  /validation:
+    displayName: DeviceValidation
+    description: Validates the device before it is activated
+    post:
+      description: Validates the device before it is activated
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: device-validation-request-schema
+          example: !include device/Examples/device-validation-request-example.json
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: device-validation-response-schema
+              example: !include device/Examples/device-validation-response-example.json
+
+/document:
+  /retrieval:
+    displayName: GetDocument
+    description: Creates the document with the carrier
+    post:
+      description: Creates the document with the carrier
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: document-retrieval-request-schema
+          example: !include document/retrieval/Examples/document-retrieval-request-example.json
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: document-retrieval-response-schema
+              example: !include document/retrieval/Examples/document-retrieval-response-example.json
+  /submission:
+    displayName: SubmitDocument
+    description: Submits the document signature to the carrier
+    post:
+      description: Submits the document signature to the carrier
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: document-submission-request-schema
+          example: !include document/submission/Examples/document-submission-request-example.json
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: document-submission-response-schema
+              example: !include document/submission/Examples/document-submission-response-example.json
+
+/eligibility:
+  displayName: ExistingLinePreAuth
+  description:  Checks the customer upgrade eligibility and returns the financing options for loans, lease and subsidy
+  post:
+    is: [ commonHeader ]
+    body:
+      application/json:
+        schema: eligibility-request-schema
+        example: !include eligibility/Examples/preAuthEligibility-request-example.json
+    responses:
+     200:
+      description: Success
+      body:
+       application/json:
+        schema: eligibility-response-schema
+        example: !include eligibility/Examples/preAuthEligibility-response-example.json
+
+/offers:
+  /lookup:
+    displayName: CarrierOfferingsLookup
+    description: Retrieves offerings based on customer eligibility
+    post:
+      description: Retrieves offerings based on customer eligibility
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: offers-lookup-request-schema
+          example: !include offers/lookup/Examples/CarrierOfferingRequestExample.json
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: offers-lookup-response-schema
+              example: !include offers/lookup/Examples/CarrierOfferingResponseExample.json
+  /selection:
+    displayName: SavePreAuth
+    description: Submits the offerings selected by the customer
+    post:
+      description: Submits the offerings selected by the customer
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: offers-selection-request-schema
+          example: !include offers/selection/Examples/offers-selection-request-example.json
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: offers-selection-response-schema
+              example: !include offers/selection/Examples/offers-selection-response-example.json
+
+/order:
+  /{order_no}/status:
+    displayName: OrderNotification
+    description: Checks the activation status for the connection
+    get:
+      description: Checks the activation status for the connection
+      is: [ commonHeader ]
+      body:
+        application/json:
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: order-status-response-schema
+              example: !include order/status/Examples/order-status-response-example.json
+  /returns:
+    displayName: DeviceReturnRequest
+    description: TODO
+    post:
+      description: TODO
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: order-returns-request-schema 
+          example: !include order/returns/Examples/order-returns-request-example.json
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: order-returns-response-schema
+              example: !include order/returns/Examples/order-returns-response-example.json
+            
+/token:
+  /retrieval:
+    displayName: TokenRequest
+    description: TODO
+    post:
+      description: TODO
+      is: [ commonHeader ]
+      body:
+        application/json:
+          schema: token-retrieval-request-schema
+          example: !include token/retrieval/Examples/token-retrieval-request-example.json
+      responses:
+        200:
+          description: success
+          body:
+            application/json:
+              schema: token-retrieval-response-schema
+              example: !include token/retrieval/Examples/token-retrieval-response-example.json
